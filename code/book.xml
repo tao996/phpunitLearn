@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+	<book>
+		<author>高洛峰</author>
+		<title>细说PHP（第2版）</title>
+		<price>100</price>
+	</book>
+	<book>
+		<author>汤姆森,威利</author>
+		<title>php和mysql web开发</title>
+		<price>95</price>
+	</book>
+	<book>
+		<author>麦金太尔</author>
+		<title>PHP编程实战</title>
+		<price>69</price>
+	</book>
+</data>
