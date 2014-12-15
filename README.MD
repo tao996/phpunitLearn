@@ -17,3 +17,12 @@
 [基境](4fixtures.md)
 
 [组织测试](5organizing.md)
+
+[数据库测试](6database.md)
+
+
+### 参考资料
+
+* [PHPUnit 3.7](https://phpunit.de/manual/3.7/zh_cn/index.html)
+* [PHPUnit Example](https://github.com/tamaragl/PHPUNIT)
+* [PHP Master: Write Cutting-edge Code](http://www.sitepoint.com/store/php-master-write-cutting-edge-code/)

@@ -1,8 +1,8 @@
 ## 基境
 
-[官方手册](https://phpunit.de/manual/current/zh_cn/fixtures.html)
+[官方手册](https://phpunit.de/manual/current/zh_cn/fixtures.html) 官方很多版本的手册：4.6(alpha) , 4.5(beta), 4.4(stable),4.1(alpha),4.0(beta),3.7(stable)
 
-你可以打开官方手册，然后一边看手册，一边看教程。
+之前我看的一直是4.4的版本，好吧，我错了，我应该看3.7的。你可以打开官方手册，然后一边看手册，一边看教程。
 
 我们的测试流程是这样的：初始状态 -> 已知状态（测试数据） -> 测试 -> 测试结束 -> 初始状态（清除数据）
 

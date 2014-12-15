@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<dataset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<database name="test">
+	<table_data name="book">
+	<row>
+		<field name="id">1</field>
+		<field name="author">Luke Welling</field>
+		<field name="title">PHP和MySQL Web开发</field>
+		<field name="price">69.20</field>
+		<field name="total">30</field>
+	</row>
+	<row>
+		<field name="id">2</field>
+		<field name="author">高洛峰</field>
+		<field name="title">细说PHP</field>
+		<field name="price">81.10</field>
+		<field name="total">50</field>
+	</row>
+	<row>
+		<field name="id">3</field>
+		<field name="author">列旭松</field>
+		<field name="title">PHP核心技术与最佳实践</field>
+		<field name="price">71.20</field>
+		<field name="total">15</field>
+	</row>
+	<row>
+		<field name="id">4</field>
+		<field name="author">潘凯华</field>
+		<field name="title">PHP开发实战1200例</field>
+		<field name="price">79.20</field>
+		<field name="total">61</field>
+	</row>
+	<row>
+		<field name="id">5</field>
+		<field name="author">麦金太尔</field>
+		<field name="title">PHP编程实战</field>
+		<field name="price">56.40</field>
+		<field name="total">33</field>
+	</row>
+	<row>
+		<field name="id">6</field>
+		<field name="author">Matt Zandstra</field>
+		<field name="title">深入PHP：面向对象、模式与实践</field>
+		<field name="price">58.70</field>
+		<field name="total">48</field>
+	</row>
+	</table_data>
+</database>
+</dataset>

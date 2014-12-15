@@ -4,8 +4,8 @@
     <testsuite name="organizing">
 		<directory>organizing</directory>
 		<file>dependsTest.php</file>
-		<file>iphone6Test.php</file>
 		<file>providerTest.php</file>
+		<file>iphone6Test.php</file>
     </testsuite>
   </testsuites>
 </phpunit>
