@@ -1,0 +1,52 @@
+<?xml version="1.0"  encoding="UTF-8"?>
+<dataset>
+	<table name="book">
+	<column>id</column>
+	<column>author</column>
+	<column>title</column>
+	<column>price</column>
+	<column>total</column>
+	<row>
+		<value>1</value>
+		<value>Luke Welling</value>
+		<value>PHP和MySQL Web开发</value>
+		<value>69.20</value>
+		<value>30</value>
+	</row>
+	<row>
+		<value>2</value>
+		<value>高洛峰</value>
+		<value>细说PHP</value>
+		<value>81.10</value>
+		<value>50</value>
+	</row>
+	<row>
+		<value>3</value>
+		<value>列旭松</value>
+		<value>PHP核心技术与最佳实践</value>
+		<value>71.20</value>
+		<value>15</value>
+	</row>
+	<row>
+		<value>4</value>
+		<value>潘凯华</value>
+		<value>PHP开发实战1200例</value>
+		<value>79.20</value>
+		<value>61</value>
+	</row>
+	<row>
+		<value>5</value>
+		<value>麦金太尔</value>
+		<value>PHP编程实战</value>
+		<value>56.40</value>
+		<value>33</value>
+	</row>
+	<row>
+		<value>6</value>
+		<value>Matt Zandstra</value>
+		<value>深入PHP：面向对象、模式与实践</value>
+		<value>58.70</value>
+		<value>48</value>
+	</row>
+	</table>
+</dataset>

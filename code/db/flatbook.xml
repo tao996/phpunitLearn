@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<book id="1"  author="luke Welling" title="PHP和MySQL Web开发" price="69.20" total="30" />
+	<book id="2"  author="高洛峰" title="细说PHP" price="81.10" total="50" />
+	<book id="3"  author="列旭松" title="PHP核心技术与最佳实践" price="71.20" total="15" />
+	<book id="4"  author="潘凯华" title="PHP开发实战1200例" price="79.20" total="61" />
+	<book id="5"  author="麦金太尔" title="PHP编程实战" price="56.40" total="33" />
+	<book id="6"  author="Matt Zandstra" title="深入PHP：面向对象、模式与实践" price="58.70" total="48" />
+</dataset>
