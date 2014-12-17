@@ -2,6 +2,8 @@
 
 你可查看 [官方文档](https://phpunit.de/manual/3.7/zh_cn/database.html) ，但官方文档实在太吝啬文字，看了各种莫名其妙，不知道为啥要那样写代码。所以本节将以 [PHP Master: Write Cutting-edge Code](http://www.sitepoint.com/store/php-master-write-cutting-edge-code/) 中的第7章：自动测试 作为参考指引。
 
+顺便说一下这本书，书的内容还广，大部分都是点到为止，不太适合新手
+
 
 
 在MVC模式编程中，C层控制着业务的逻辑，通常是测试的重点，包含了大量的数据库操作。从官方文档中我们可以知道，所有的单元测试的范例都不包含数据库交互，因为要处理很多的问题（看文档说明，这里就不重复了），导致测试成本太高。
@@ -254,7 +256,7 @@ public function testDoSomething(){
 
 除了上面基于文件的 DataSet/DataTable ，其实还有基于查询的，还有过滤组合的。
 
-##### 基于文件
+#### 基于文件 － 第1种DataSet
 
 第1种文件：XML DataSet，前面我们已经使用过，它调用了 createXMLDataSet 函数，支持的 xml 格式我们也清楚了，可以查看 [book2.xml](./code/db/book2.xml) 。大概就是下面的样子.
 ```
@@ -306,7 +308,7 @@ table_name:
 
 <img src='./pic/38.png' />
 
-第5种格式：直接使用PHP的数组，太好了，赶快试一试吧。代码如下
+第6种格式：直接使用PHP的数组，太好了，赶快试一试吧。代码如下
 ```
 return new MyApp_DbUnit_ArrayDataSet(array(
 'book'=>array(
@@ -323,6 +325,221 @@ return new MyApp_DbUnit_ArrayDataSet(array(
 
 算了，我还是乖乖地用 mysqldump 导出来的sql格式文件吧。
 
-#### Query (SQL) DataSet
-这个讲什么内容，说真的我也不清楚，跳过吧。
+#### Query (SQL) DataSet － 第2种DataSet
+这个讲什么内容，说真的我也不清楚，从文档上看，大概就是指从数据库中查询到的数据记录。目前有两种方式可以从数据库中获取数据，如下面的 $actual 获取方式：
+```
+// from http://matthewturland.com/2010/01/04/database-testing-with-phpunit-and-mysql/
+public function testDo2(){
+	$expected = $this->createMySQLXMLDataSet('./book.xml');
+	$actual = new PHPUnit_Extensions_Database_DataSet_QueryDataSet($this->getConnection());
+	$actual->addTable('book', 'SELECT * FROM book');//只要是SQL语句就OK，可以添加 where,order 等
+	$this->assertDataSetsEqual($expected, $actual);
+}
 
+// form http://stackoverflow.com/questions/13801141/phpunit-testing-a-select-in-a-method-with-dataset
+public function testGetAll(){
+	$expected = $this->getDataSet()->getTable("book");
+	$actual =  $this->getConnection()->createQueryTable("book","SELECT * FROM book");
+	$this->assertTablesEqual($expected,$actual);
+}
+```
+
+#### Database (DB) DataSet （数据库数据集） － 第3种DataSet
+
+同样都是DataSet，Database DataSet 与 Query DataSet 的区别就是，Query DataSet 是可以指定查询条件，然后通过 sql 语句来获取指定条件的数据集，而 Database DataSet 则是将整个表，甚至是整个库中所有的表 作为数据集。比如下面的示例
+
+```
+//只使用1个表，结果OK (1 test, 1 assertion)
+public function testDBDatasetFilterTable(){
+	$expected = $this->createMySQLXMLDataSet('./book.xml');
+	$tableNames = array('book');
+	$actual = $this->getConnection()->createDataSet($tableNames);
+	$this->assertDataSetsEqual($expected, $actual);
+}
+//整个库所有的表，因为我们只使用了book.xml，所以当然是 FAILURES!
+public function testDBDatasetAllTable(){
+	$actual = $this->getConnection()->createDataSet();//整个库所有的表
+	$expected = $this->createMySQLXMLDataSet('./book.xml');
+	$this->assertDataSetsEqual($expected, $actual);
+}
+```
+
+#### DataSet 过滤器
+
+上面的 database DataSet 中，我们测试了将整个库所有的表作显数据集，也测试了通过指定要作为数据集的表（白名单）作为数据集，这是在表层次上的操作。而通过 DataSet 过滤器，我们还可以继续细分，在表和列的层次上设置白/名单，提供更具有针对性的数据集。
+
+```
+//黑名单功能:我不需要某个表，我也不想要表中的某些字段，不要把这些显示出来
+public function testExcludeFilterDataset(){
+	//所有的数据表作为数据集，跟 testDBDatasetAllTable() 方法中的代码一样
+	$dataSet = $this->getConnection()->createDataSet();
+	//使用黑名单，对数据集进行过滤
+	$filterDataSet = new PHPUnit_Extensions_Database_DataSet_DataSetFilter($dataSet);
+	$filterDataSet->addExcludeTables(array('book'));//我不需要book表，即只留下student表
+	$filterDataSet->setExcludeColumnsForTable('student', array('nickname'));//字段的黑名单,即student表中不需要nickname列
+	
+	$expected = $this->createMySQLXMLDataSet('./book.xml');
+	$this->assertDataSetsEqual($expected, $filterDataSet);
+}
+//测试结果只是为了让你明白黑名单是怎么回事
+```
+
+<img src='./pic/42.png' />
+
+继续，尝试使用白名单，实现上面的功能
+
+<img src='./pic/43.png' />
+
+**注意**：表的白名单和黑名单也只能选择其一，不能二者同时使用。
+
+
+#### Composite DataSet （组合数据集）－ 第4种DataSet
+
+这种数据集方式我最终没有测试成功，如果您知道原因，记得告诉我哦！
+
+组合数据集，从名字上就可以大概猜出它可以把多个单独的数据集合并在一起。（个人开始猜测，一般情况下可以组合的情况大概有两种：1 两个单独部分都是结构相同，像 mysql 中的 union语句；2 结构不同，但还是可以合并成在一起，像 mysql 中的 left join 之类的。不知道会是哪一种哦？）
+
+继续阅读官方文档，可以发现原来 Composite DataSet 的组合只是我猜测的第1种情况，需要结构相同才行。那我们就拿官方的示例来进行测试吧。
+
+```
+// fixture1.xml
+<?xml version="1.0" ?>
+<dataset>
+    <guestbook id="1" content="Hello buddy!" user="joe" created="2010-04-24 17:15:23" />
+</dataset>
+// fixture2.xml
+<?xml version="1.0" ?>
+<dataset>
+    <guestbook id="2" content="I like it!" user="##NULL##" created="2010-04-26 12:14:20" />
+</dataset>
+// 新建 CompositeTest.php
+...
+public function getDataSet() {
+	$ds1 = $this->createFlatXmlDataSet ( 'fixture1.xml' );
+	$ds2 = $this->createFlatXmlDataSet ( 'fixture2.xml' );
+	$compositeDs = new PHPUnit_Extensions_Database_DataSet_CompositeDataSet ();
+	$compositeDs->addDataSet ( $ds1 );
+	$compositeDs->addDataSet ( $ds2 );
+	return $compositeDs;
+}
+...
+//测试结果：Argument 1 passed to PHPUnit_Extensions_Database_DataSet_CompositeDataSet::__construct() must be an array, none given
+```
+
+于是修改方法为
+```
+public function getDataSet() {
+	$ds1 = $this->createFlatXmlDataSet ( 'fixture1.xml' );
+	$ds2 = $this->createFlatXmlDataSet ( 'fixture2.xml' );
+	$compositeDs = new PHPUnit_Extensions_Database_DataSet_CompositeDataSet (array($ds1,$ds2));
+	return $compositeDs;
+}
+//测试结果：InvalidArgumentException: DataSet contains a table that already exists: guestbook
+```
+
+然后查看源代码，addDataSet($dataSet) 的作用是 "Adds a new data set to the composite.The dataset may not define tables that already exist in the composite."
+
+唉，好想骂人！将new那一行的代码修改为 `new PHPUnit_Extensions_Database_DataSet_CompositeDataSet (array($ds1));`,这次提示信息为： Base table or view not found: 1146 Table 'test.guestbook' doesn't exist
+
+那好，新建一个 guestbook 表
+```
+CREATE TABLE IF NOT EXISTS `guestbook` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `content` varchar(30) NOT NULL,
+  `user` varchar(20) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+```
+再次运行测试代码，这次可以在 guestbook 看到记录
+
+<img src='./pic/44.png' />
+
+然后再次恢复代码，还是没有达到合并结果集的目的。
+
+失败！代码在这里 [CompositeTest.php](./code/db/CompositeTest.php)
+
+#### Replacement DataSet （替换数据集)
+
+严格来说，我不认为这是要把它独立作为另一种DataSet，Replacement DataSet 只是提供了一种可以处理表中带有NULL数据的方式，而在第1种文件数据集中，其实xml和Flat xml 也是可以理解的，只不过需要一点技巧。
+
+首先我们需要准备一下数据，建立一个新表
+```
+CREATE TABLE IF NOT EXISTS `student` (
+  `name` varchar(10) NOT NULL,
+  `nickname` varchar(10) DEFAULT NULL,
+  `age` int(11) NOT NULL,
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+INSERT INTO `student` (`name`, `nickname`, `age`) VALUES
+('demo1', 'kobe', 40),
+('Mr', NULL, 50),
+('xiaoming', 'mm', 10);
+```
+
+然后新建一个flat xml 文件，内容如下 flatstudent.xml
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<student name="demo1"  nickname="kobe" age=40 />
+	<student name="Mr L"  nickname="##NULL##" age=50 />
+	<student name="xiaoming"  nickname="mm" age=10 />
+</dataset>
+// 注意第二行的 name 值不相同
+```
+将上面的数据添加到数据表 student 中，使用常规方法
+```
+public function getDataSet(){
+    return $this->createFlatXmlDataSet('flatstudent.xml'); 
+}
+```
+结果如下图
+
+<img src='./pic/40.png' />
+
+那如果我们把 nickname="##NULL##" 改为 nickname="NULL" 插入呢？结果NULL又被作为普通字符串处理
+
+<img src='./pic/41.png' />
+
+为了插入 NULL 值，需要对 ##NULL## 进行替换，代码及结果如下
+```
+public function getDataSet(){
+    $ds = $this->createFlatXmlDataSet('flatstudent.xml');
+	$rds = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($ds);
+	$rds->addFullReplacement('##NULL##', null);//这个比较特殊，只能用在getDataSet()中，不能够用在 test* 中
+	return $rds;
+}
+```
+<img src='./pic/39.png' />
+
+然后再写对应的 Replacement 测试。
+```
+public function testReplacementDataset(){
+	$expected = $this->createFlatXMLDataSet('./flatstudent.xml');
+	$tableNames = array('student');
+	$actual = $this->getConnection()->createDataSet($tableNames);
+	$this->assertDataSetsEqual($expected, $actual);
+}
+//结果当然是 FAILURES 了
+```
+
+#### 数据库连接API
+
+其实这3个同 TestCase 中的 getConnection() 返回的API方法我们在上面都使用过了
+
+* createDataSet(); 数据库数据集 DataSet
+* createQueryTable($name,$sql); 数据表数据集 Table
+* getRowCount($table_name); 记录数
+
+记不起来的翻翻上面的内容，或者看下 [测试代码](./code/db/mybookTest.php)
+
+#### 数据库断言API
+
+在上面的代码中，其实我们已经使用了3种断方方式，分别是
+
+* $this->assertEquals($expected_row_count, $actual_row_count); 对行数作为断言
+* $this->assertTablesEqual($expected, $actual); 对表的状态作出断言
+* $this->assertDataSetsEqual($expected, $actual); 对数据集作出断言
+
+记不起来的翻翻上面的内容，或者看下 [测试代码](./code/db/mybookTest.php)

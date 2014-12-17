@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<student name="demo1"  nickname="kobe" age="40" />
+	<student name="Mr L"  nickname="##NULL##" age="50" />
+	<student name="xiaoming"  nickname="mm" age="10" />
+</dataset>

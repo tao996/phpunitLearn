@@ -20,9 +20,14 @@
 
 [数据库测试](6database.md)
 
+[不完整的测试与跳过的测试](7incompleteandskippedtests.md)
+
+[测试替身](8doubles.md)
+
 
 ### 参考资料
 
 * [PHPUnit 3.7](https://phpunit.de/manual/3.7/zh_cn/index.html)
 * [PHPUnit Example](https://github.com/tamaragl/PHPUNIT)
 * [PHP Master: Write Cutting-edge Code](http://www.sitepoint.com/store/php-master-write-cutting-edge-code/)
+* [phpunit Class](http://www.sourcecodebrowser.com/phpunit/3.4.1plus-prepack/class_p_h_p_unit___extensions___database___data_set___data_set_filter.html)

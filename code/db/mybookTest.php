@@ -35,7 +35,15 @@ class MyBookTest extends PHPUnit_Extensions_Database_TestCase{
 						)
 				));
 		*/
+		/*
+		// 只给 testReplacementDataset() 方法使用
+		$ds = $this->createFlatXmlDataSet('flatstudent.xml');
+		$rds = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($ds);
+		$rds->addFullReplacement('##NULL##', null);
+		return $rds;
+		*/
 	}
+/*
 	public function testDoSomething(){//OK
 		$expected_row_count = 6;
 		$actual_row_count = $this->getConnection()->getRowCount('book');
@@ -59,6 +67,57 @@ class MyBookTest extends PHPUnit_Extensions_Database_TestCase{
 	public function testGetAll(){
 		$expected = $this->getDataSet()->getTable("book");
 		$actual =  $this->getConnection()->createQueryTable("book","SELECT * FROM book");
-		$this->assertTablesEqual($expected,$actual);
+		$this->assertTablesEqual($expected,$actual);//Table跟Tables比较，DataSet跟DataSets比较，不要搞混在一起哦
 	}
+	
+	public function testDBDatasetFilterTable(){
+		$expected = $this->createMySQLXMLDataSet('./book.xml');
+		$tableNames = array('book');
+		$actual = $this->getConnection()->createDataSet($tableNames);
+		$this->assertDataSetsEqual($expected, $actual);
+	}
+
+	public function testDBDatasetAllTable(){
+		$actual = $this->getConnection()->createDataSet();//整个库所有的表
+		$expected = $this->createMySQLXMLDataSet('./book.xml');
+		$this->assertDataSetsEqual($expected, $actual);
+	}
+*/	
+	/* FAILURES
+	public function testReplacementDataset(){
+		$expected = $this->createFlatXMLDataSet('./flatstudent.xml');
+		//$rds = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet(&$expected);
+		//$rds->addFullReplacement('##NULL##', null); //没办法把 flatstudent.xml 中的 ##NULL## 进行替换
+		
+		$actual = $this->getConnection()->createDataSet( array('student'));
+		$this->assertDataSetsEqual($expected, $actual);
+	}
+	*/
+	/*
+	// 黑名单功能
+	public function testExcludeFilterDataset(){
+		//所有的数据表作为数据集，跟 testDBDatasetAllTable() 方法中的代码一样
+		$dataSet = $this->getConnection()->createDataSet();
+		//使用黑名单，对数据集进行过滤
+		$filterDataSet = new PHPUnit_Extensions_Database_DataSet_DataSetFilter($dataSet);
+		$filterDataSet->addExcludeTables(array('book'));//我不需要book表，即只留下student表
+		$filterDataSet->setExcludeColumnsForTable('student', array('nickname'));//字段的黑名单,即student表中不需要nickname列
+		
+		$expected = $this->createMySQLXMLDataSet('./book.xml');
+		$this->assertDataSetsEqual($expected, $filterDataSet);
+	}
+	*/
+	/*
+	// 白名单功能
+	public function testIncludeFilteredGuestbook(){
+		$dataSet = $this->getConnection()->createDataSet(); 
+
+		$filterDataSet = new PHPUnit_Extensions_Database_DataSet_DataSetFilter($dataSet);
+		$filterDataSet->addIncludeTables(array('student'));
+		$filterDataSet->setIncludeColumnsForTable('student', array('name', 'age'));
+		
+		$expected = $this->createFlatXMLDataSet('./flatstudent.xml');
+		$this->assertDataSetsEqual($expected, $filterDataSet);
+	}
+	*/
 }
