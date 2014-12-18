@@ -185,5 +185,207 @@ public function testTotal2(){
 //还有其它两个测试，可以查看 calAddTest.php 文件
 ```
 
+使用测试替身时，我们可以对待测类A中使用到的类B的每一个输入（使用with()）输出（使用will()）进行更加细致的检测，而这些是使用 new 类B 所无法拥有的。
+
+对于返回值，除了上面的 `returnValue($value)` 返回固定值外，还有以下几种类型
+```
+*** returnArgument($int); 返回第$int传入的参数(未改变的值) ***
+// calculate.class.php
+public static $_mc = 0;
+public function mc($num){
+	self::$_mc = $num;
+	return $num;
+}
+// calAdd.class.php
+public function mc($num){
+	$cal = $this->getCalculate();
+	return $cal->mc($num);
+}
+// calAddTest.php
+public function testMc(){
+	$this->_calculator->expects($this->any())->method('mc')->will($this->returnArgument(0));
+	$this->assertEquals(75, $this->_calAdd->mc(75));
+}
+// OK (1 test, 2 assertions)
+
+*** returnSelf(); 返回测试替身本身 ***
+// calculate.class.php
+public function madd($num){
+	self::$_mc += $num;
+	return $this;
+}
+// calAdd.class.php
+public function madd($num){
+	$cal = $this->getCalculate();
+	return $cal->madd($num);
+}
+// calAddTest.php
+public function testmadd(){
+	$this->_calculator->expects($this->any())->method('madd')->will($this->returnSelf());
+	$this->assertEquals($this->_calculator, $this->_calAdd->madd(70));
+}
+//OK (1 test, 2 assertions)
+
+*** returnValueMap($map);从参数到返回值的映射 ***
+// calAdd.class.php
+public function sum($num1,$num2){
+	$cal = $this->getCalculate();
+	return $cal->sum($num1,$num2);
+}
+// calAddTest.php
+public function testReturnValueMap(){
+	$map = array(
+			array(15,14,29),
+			array(25,33,58)
+			);
+	$this->_calculator->expects($this->any())->method('sum')->will($this->returnValueMap($map));
+	$this->assertEquals(29, $this->_calAdd->sum(15,14));
+	$this->assertEquals(58, $this->_calAdd->sum(25,33));
+}
+
+//OK (1 test, 3 assertions)
+*** returnCallback($func);返回回调函数 ***
+// calculate.class.php
+public function date($format){
+	return date($format);
+}
+// calAdd.class.php
+public function date($format){
+	$cal = $this->getCalculate();
+	return $cal->date($format);
+}
+// calAddTest.php
+public function testDate(){
+	$this->_calculator->expects($this->any())->method('date')->will($this->returnCallback('date'));
+	$this->assertEquals('2014-12-14', $this->_calAdd->date('Y-m-d'));
+}
+// OK (1 test, 2 assertions)
+
+*** onConsecutiveCalls($parms...); 返回指定列表中的值 ***
+// calculate.class.php
+public function rand(){
+	return rand(1, 4);
+}
+// calAdd.class.php
+public function calType(){
+	$cal = $this->getCalculate();
+	switch ($cal->rand()){
+		case 1: return 'add';break;
+		case 2: return 'subtract';break;
+		case 3: return 'multiply';break;
+		case 4: return 'divide';break;
+		default: return 'error';
+	}
+}
+// calAddTest.php
+public function testCalType(){
+	$this->_calculator->expects($this->any())->method('rand')->will($this->onConsecutiveCalls(1,2,3,4));//即是返回值范围，也是返回的顺序
+	$this->assertEquals('add', $this->_calAdd->calType());
+	$this->assertEquals('subtract', $this->_calAdd->calType());
+	$this->assertEquals('multiply', $this->_calAdd->calType());
+	$this->assertEquals('divide', $this->_calAdd->calType());
+}
+//OK (1 test, 5 assertions)
+
+*** throwException();抛出一个异常 ***
+// Tests: 1, Assertions: 0, Errors: 1.
+// calAdd.class.php
+public function divide($num){
+	if($num == 0)
+		throw new Exception('Division by zero');
+}
+// calAddTest.php
+public function testDivide(){
+	$stub = $this->getMock('calAdd');
+	$stub->expects($this->any())->method('divide')->will($this->throwException(new Exception('Division by zero')));
+	$stub->divide(0);
+}
+// 不知道哪里错了
+```
+
+现在，再来回答最开始的两个问题，什么是测试替身，什么是短连件。测试替身是用于代替依赖的对象，而短连件则是通过代码 getMock() 返回的类的实例，也即是测试替身。
+
+### 仿件对象
+
+通过使用测试替身，而不是对象来执行调用方法，并且验证行为结果的过程，称为 mocking 模仿。你可以使用仿件对象（mock object）作为一个用来验证被测系统（SUT）执行时的直接输出结果的观察点。通常，仿件对象还包括短连件的功能 —— 如果测试没有失败，则需向被测系统返回值，并验证返回值。因此，仿件对象不仅仅是简单的短连件+断言"
+
+下面展示如何使用仿件来对观察者模式进行测试
+```
+// library/subject.php
+class Subject{
+	protected $stuList = array();
+	// 添加学生（被通知对象）
+	public function addStu(Student $stu){
+		$this->stuList[] = $stu;
+	}
+	// 调用每个学生的 update 动作
+	public function notify($args){
+		foreach($this->stuList as $stu){
+			$stu->update($args);
+		}
+	}
+	public function warn(){
+		$this->notify('The teacher is coming!');
+	}
+}
+
+class Student{
+	public function update($args){}
+}
+
+class Student1 extends Student{
+	public function update($args){
+		echo 'OH,NO';
+	}
+}
+class Student2 extends Student{
+	public function update($args){
+		echo 'OVER';
+	}
+}
+// librarytest/subjectTest.php
+require_once '../library/subject.php';
+
+class SubjectTest extends PHPUnit_Framework_TestCase{
+	public function testObserversUpdate(){
+		//建立仿件对象，被通知的学生，只模仿update()方法
+		$student1 = $this->getMock('Student1',array('update'));
+		$student1->expects($this->once())->method('update')->with($this->equalTo('The teacher is coming!'));
+		
+		$student2 = $this->getMock('Student1',array('update'));
+		$student2->expects($this->once())->method('update')->with($this->equalTo('The teacher is coming!'));
+		
+		$subject = new Subject();
+		$subject->addStu($student1);
+		$subject->addStu($student2);
+		$subject->warn();
+	}
+}
+// OK (1 test, 2 assertions)
+```
+
+with()方法可以携带任何数据的参数，对应于被模仿的方法的参数数量，还可以对方法的参数指定更加高等的约束。比如 `$student2->expects($this->once())->method('update')->with($this->stringContains('teacher'));` 也是可以通过测试的。如果是整数，还可以使用 `$this->greaterThan($int)` 来进行约束。甚至可以使用callback()来进行约束，如`$student2->expects($this->once())->method('update')->with($this->callback(function($msg){ return $msg =='The teacher is coming!';}));`
+
+上面我们在expects()中使用到了$this->once()和$this->at(0)，这些都称为匹配器matchers，它们分别代表：
+
+* any() 方法执行0或任意次数时匹配成功
+* never() 从未执行时匹配成功
+* atLeastOnce() 执行至少一次时匹配成功
+* once() 执行恰好一次时匹配成功
+* exactly(int $count) 执行 $count 次时匹配成功
+* at(int $index) 执行第 $index 次时匹配成功，从0开始
+
+#### 对 Web 服务进行短连和模仿
+
+当应用程序需要和 web 服务进行交互时，会想要在不与 web 服务进行实际交互的情况下对其进行测试，可以使用 getMockFromWsdl() 来进行测试。
+
+Sorry，官方的例子我看不懂，所以不知道这个有什么用。
+
+#### 对文件系统进行模仿
+
+需要安装 vfsStream，我没有安装，所以也就跳过去了。
+
+
+
 #### 其它资料：
 [探索 Test Double 的状态集](http://msdn.microsoft.com/zh-cn/magazine/cc163358.aspx)

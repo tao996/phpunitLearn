@@ -38,4 +38,40 @@ class calAdd{
 		}
 		return $total;
 	}
+	
+	public function mc($num){
+		$cal = $this->getCalculate();
+		return $cal->mc($num);
+	}
+	
+	public function madd($num){
+		$cal = $this->getCalculate();
+		return $cal->madd($num);
+	}
+	
+	public function sum($num1,$num2){
+		$cal = $this->getCalculate();
+		return $cal->sum($num1,$num2);
+	}
+	
+	public function date($format){
+		$cal = $this->getCalculate();
+		return $cal->date($format);
+	}
+	
+	public function calType(){
+		$cal = $this->getCalculate();
+		switch ($cal->rand()){
+			case 1: return 'add';break;
+			case 2: return 'subtract';break;
+			case 3: return 'multiply';break;
+			case 4: return 'divide';break;
+			default: return 'error';
+		}
+	}
+	
+	public function divide($num){
+		if($num == 0)
+			throw new Exception('Division by zero');
+	}
 }
