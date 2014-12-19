@@ -176,4 +176,20 @@ public function withdrawMoney($balance){
 * 补中是指运行员用2次击球将10球瓶全部击倒，本轮的奖励是下1次击球所击倒的球瓶数
 * 全中是指运行员用1次击球将10球瓶全部击倒，本轮的奖励是下2次击球所击倒的球瓶数
 
-使用 PHPUnit_Extensions_Sotry_TestCase 把上面的规则写成脚本.(需要安装 PHPUnit_Extensions_Sotry_TestCase 扩展，可以在这里[下载](https://github.com/sebastianbergmann/phpunit-story))
+使用 PHPUnit_Extensions_Sotry_TestCase 把上面的规则写成脚本.(需要安装 PHPUnit_Extensions_Sotry_TestCase 扩展，可以在这里 [下载](https://github.com/sebastianbergmann/phpunit-story)，并且查看它的 Tests 示例)。当然示例的代码最好还是自己敲一遍啦。
+
+* [BowlingGameSpec.php](https://github.com/sebastianbergmann/phpunit-story/blob/master/Tests/_files/BowlingGameSpec.php)
+* [BowlingGame.php](https://github.com/sebastianbergmann/phpunit-story/blob/master/Tests/_files/BowlingGame.php)
+
+执行结果：
+```
+
+[root@localhost librarytest]# phpunit BowlingGameTest.php
+PHPUnit 3.7.22 by Sebastian Bergmann.
+
+.....
+
+Time: 10 ms, Memory: 3.25Mb
+
+OK (5 tests, 5 assertions)
+```
