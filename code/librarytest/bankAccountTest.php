@@ -8,10 +8,12 @@ class BankAccountTest extends PHPUnit_Framework_TestCase{
 	}
 	
 	//初始帐户余额为0
+
 	public function testBalanceIsInitiallyZero(){
 		$this->assertEquals(0, $this->ba->getBalance());
 	}
 	//余额不能小于0
+
 	public function testBalanceCannotBecomeNegative(){
 		try{
 			$this->ba->withdrawMoney(1);//取钱
@@ -21,7 +23,7 @@ class BankAccountTest extends PHPUnit_Framework_TestCase{
 		}
 		$this->fail();
 	}
-	
+
 	public function testBalanceCannotBecomeNegative2(){
 		try{
 			$this->ba->depositMoney(-1);//存钱
@@ -31,7 +33,7 @@ class BankAccountTest extends PHPUnit_Framework_TestCase{
 		}
 		$this->fail();
 	}
-	
+
 	public function testDepositMoney(){
 		$this->assertEquals(45, $this->ba->depositMoney(45));
 		$this->assertEquals(445, $this->ba->depositMoney(400));
