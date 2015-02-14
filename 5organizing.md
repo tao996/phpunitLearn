@@ -62,3 +62,55 @@ phpunit --no-configuration
 * PHPUnit -c 或者 PHPUnit --configuration 加上指定的配置文件
 * phpunit.xml.dist 文件中指定的配置
 * phpunit.xml
+
+### 使用 bootstrap 和 Autoload
+
+在对某个类进行测试的时候，有时候由于存在依赖关系，我们需要在文件中写多个 `include` 来引入需要的文件，像下面这样
+```
+// test.php
+include_once './class/Foo.php';
+include_once './class/Bar.php';
+include_once './class/Baz.php';
+
+class FooTest extends PHPUnit_Framework_TestCase {
+	public function testNewFoo(){
+		$foo = new Foo();
+		$this->assertEquals($foo->output(), 'Foo');
+	}
+	
+	public function testNewBar() {
+		$bar = new Bar();
+		$this->assertEquals($bar->output(), 'Bar');
+	}
+	
+	public function testNewBaz() {
+		$baz = new Baz();
+		$this->assertEquals($baz->output(), 'Baz');
+	}
+}
+```
+这样虽然实现了测试的功能，但是代码太难看了，这时我们可以使用 php 的自动加载来解决这个问题。这里会涉及到3个文件，分别如下。
+```
+// Autoload.php 负责实现自动加载类的功能
+class Autoload {
+	// 为了演示方便，这里采用了最简单的方式
+	public static function loader($className) {
+		include_once './class/' . $className . '.php';
+	}
+}
+spl_autoload_register ( array ('Autoload', 'loader' ) );
+
+// bootstrap.php 负责测试的预备工作
+include_once 'Autoload.php';
+
+// phpunit.xml 测试配置
+<phpunit bootstrap="bootstrap.php">
+</phpunit>
+```
+完成上面3个步骤之后，就可以把 test.php 中的 include 给注释掉啦
+
+<img src='./pic/51.png' />
+
+参考资料：[PHPUNIT BOOTSTRAP AND AUTOLOADING CLASSES](http://jes.st/2011/phpunit-bootstrap-and-autoloading-classes/)
+
+代码文件在 code/bootstrap/ 下
